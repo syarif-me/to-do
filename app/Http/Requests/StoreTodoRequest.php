@@ -11,7 +11,7 @@ class StoreTodoRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -25,7 +25,7 @@ class StoreTodoRequest extends FormRequest
             'title' => 'required|string|max:255',
             'assignee' => 'nullable|string|max:255',
             'due_date' => 'required|date|after_or_equal:today',
-            'time_tracked' => 'nullable|numeric|min:0',
+            'time_tracked' => 'nullable|integer|min:0',
             'status' => 'nullable|in:pending,open,in_progress,completed',
             'priority' => 'nullable|in:low,medium,high',
         ];
