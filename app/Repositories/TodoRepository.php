@@ -3,19 +3,16 @@
 namespace App\Repositories;
 
 use App\Enums\Status;
+use App\Enums\TodoChartType;
 use App\Models\Todo;
 use App\Repositories\Interfaces\TodoRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Termwind\Components\Raw;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 class TodoRepository implements TodoRepositoryInterface
 {
     protected Todo $model;
-
-    const TYPE_STATUS = 'status';
-    const TYPE_PRIORITY = 'priority';
-    const TYPE_ASSIGNEE = 'assignee';
 
     function __construct(Todo $todo)
     {
@@ -62,10 +59,10 @@ class TodoRepository implements TodoRepositoryInterface
     public function getSummary(string $type)
     {
         if (empty($type)) {
-            return [];
+            throw new BadRequestException("type can't be null");
         }
 
-        if ($type === self::TYPE_ASSIGNEE) {
+        if ($type === TodoChartType::TYPE_ASSIGNEE) {
             return Todo::query()
                 ->selectRaw('assignee')
                 ->selectRaw('COUNT(*) as total_todos')
@@ -89,9 +86,9 @@ class TodoRepository implements TodoRepositoryInterface
 
         // For TYPE_STATUS and TYPE_PRIORITY
         $selectColumn  = '';
-        if ($type === self::TYPE_STATUS) {
+        if ($type === TodoChartType::TYPE_STATUS) {
             $selectColumn = 'status';
-        } else if ($type === self::TYPE_PRIORITY) {
+        } else if ($type === TodoChartType::TYPE_PRIORITY) {
             $selectColumn = 'priority';
         }
 

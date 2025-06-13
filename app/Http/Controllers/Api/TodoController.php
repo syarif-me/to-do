@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\TodoChartType;
 use App\Exports\TodoExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTodoRequest;
 use App\Services\Interfaces\TodoServiceInterface;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class TodoController extends Controller
 {
@@ -40,6 +42,25 @@ class TodoController extends Controller
 
     function chart(Request $request)
     {
-        return $this->service->getSummary($request->type);
+        $type = $request->query('type');
+        $this->validateChartType($type);
+        return $this->service->getSummary($type);
+    }
+
+    private function validateChartType(?string $type)
+    {
+        if (empty($type)) {
+            throw new BadRequestHttpException("type can't be null");
+        }
+
+        $allTypes = [
+            TodoChartType::TYPE_STATUS,
+            TodoChartType::TYPE_PRIORITY,
+            TodoChartType::TYPE_ASSIGNEE,
+        ];
+
+        if (!in_array($type, $allTypes)) {
+            throw new BadRequestHttpException("Invalid type");
+        }
     }
 }

@@ -5,6 +5,8 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Exception\RequestExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -28,6 +30,19 @@ return Application::configure(basePath: dirname(__DIR__))
                 'message' => 'Validation failed.',
                 'errors' => $e->errors(),
             ], 422);
+        });
+
+        $exceptions->render(function (HttpExceptionInterface $e, Request $request) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], $e->getStatusCode());
+        });
+
+        $exceptions->render(function (Throwable $e, Request $request) {
+            return response()->json([
+                'message' => 'Server Error',
+                'exception' => class_basename($e),
+            ], 500);
         });
     })
     ->create();
