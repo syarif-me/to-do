@@ -37,4 +37,9 @@ class TodoController extends Controller
 
         return Excel::download(new TodoExport($todos, $summary), 'todos.xlsx');
     }
+
+    function chart(Request $request)
+    {
+        return $this->service->getSummary($request->type);
+    }
 }

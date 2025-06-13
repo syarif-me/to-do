@@ -9,4 +9,5 @@ interface TodoServiceInterface
 {
     function create(array $data): Todo;
     function getTodosQuery(Request $request);
+    function getSummary(string $type);
 }

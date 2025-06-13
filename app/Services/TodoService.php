@@ -15,7 +15,7 @@ class TodoService implements TodoServiceInterface
     {
         $this->repository = $repository;
     }
-	
+    
     function create(array $data): Todo
     {
         return $this->repository->create($data);
@@ -24,5 +24,17 @@ class TodoService implements TodoServiceInterface
     public function getTodosQuery(Request $request)
     {
         return $this->repository->getTodosQuery($request);
+    }
+
+    public function getSummary(string $type)
+    {
+        $summary = $this->repository->getSummary($type);
+
+        $summaryKey = $type . '_summary';
+        $summaryDetail = collect($summary)->pluck('total', $type)->toArray();
+
+        return [
+            $summaryKey => $summaryDetail
+        ];
     }
 }

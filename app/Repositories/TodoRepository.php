@@ -2,13 +2,20 @@
 
 namespace App\Repositories;
 
+use App\Enums\Status;
 use App\Models\Todo;
 use App\Repositories\Interfaces\TodoRepositoryInterface;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Termwind\Components\Raw;
 
 class TodoRepository implements TodoRepositoryInterface
 {
     protected Todo $model;
+
+    const TYPE_STATUS = 'status';
+    const TYPE_PRIORITY = 'priority';
+    const TYPE_ASSIGNEE = 'assignee';
 
     function __construct(Todo $todo)
     {
@@ -51,4 +58,54 @@ class TodoRepository implements TodoRepositoryInterface
 
         return $query;
     }
+
+    public function getSummary(string $type)
+    {
+        if (empty($type)) {
+            return [];
+        }
+
+        if ($type === self::TYPE_ASSIGNEE) {
+            return Todo::query()
+                ->selectRaw('assignee')
+                ->selectRaw('COUNT(*) as total_todos')
+                ->selectRaw("SUM(CASE WHEN status = '" . Status::PENDING->value . "' THEN 1 ELSE 0 END) as total_pending_todos")
+                ->selectRaw("SUM(CASE WHEN status = '" . Status::COMPLETED->value . "' THEN time_tracked ELSE 0 END) as total_timetracked_completed_todos")
+                ->whereNotNull('assignee')
+                ->groupBy('assignee')
+                ->get()
+                ->map(function ($row) {
+                    return [
+                        'assignee' => $row->assignee,
+                        'total' => [
+                            'total_todos' => $row->total_todos,
+                            'total_pending_todos' => $row->total_pending_todos,
+                            'total_timetracked_completed_todos' => $row->total_timetracked_completed_todos,
+                        ],
+                    ];
+                })
+                ->toArray();
+        }
+
+        // For TYPE_STATUS and TYPE_PRIORITY
+        $selectColumn  = '';
+        if ($type === self::TYPE_STATUS) {
+            $selectColumn = 'status';
+        } else if ($type === self::TYPE_PRIORITY) {
+            $selectColumn = 'priority';
+        }
+
+        return Todo::query()
+            ->select($selectColumn, DB::raw('COUNT(id) AS total'))
+            ->groupBy($selectColumn)
+            ->get()
+            ->map(function ($row) use ($selectColumn) {
+                return [
+                    $selectColumn => $row->{$selectColumn},
+                    'total' => $row->total,
+                ];
+            })
+            ->toArray();
+    }
+
 }
