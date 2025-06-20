@@ -62,7 +62,7 @@ class TodoRepository implements TodoRepositoryInterface
             throw new BadRequestException("type can't be null");
         }
 
-        if ($type === TodoChartType::TYPE_ASSIGNEE) {
+        if ($type === TodoChartType::TYPE_ASSIGNEE->value) {
             return Todo::query()
                 ->selectRaw('assignee')
                 ->selectRaw('COUNT(*) as total_todos')
@@ -84,11 +84,10 @@ class TodoRepository implements TodoRepositoryInterface
                 ->toArray();
         }
 
-        // For TYPE_STATUS and TYPE_PRIORITY
         $selectColumn  = '';
-        if ($type === TodoChartType::TYPE_STATUS) {
+        if ($type === TodoChartType::TYPE_STATUS->value) {
             $selectColumn = 'status';
-        } else if ($type === TodoChartType::TYPE_PRIORITY) {
+        } else if ($type === TodoChartType::TYPE_PRIORITY->value) {
             $selectColumn = 'priority';
         }
 

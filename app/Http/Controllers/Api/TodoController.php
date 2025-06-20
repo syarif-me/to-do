@@ -54,9 +54,9 @@ class TodoController extends Controller
         }
 
         $allTypes = [
-            TodoChartType::TYPE_STATUS,
-            TodoChartType::TYPE_PRIORITY,
-            TodoChartType::TYPE_ASSIGNEE,
+            TodoChartType::TYPE_STATUS->value,
+            TodoChartType::TYPE_PRIORITY->value,
+            TodoChartType::TYPE_ASSIGNEE->value,
         ];
 
         if (!in_array($type, $allTypes)) {
